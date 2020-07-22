@@ -126,6 +126,14 @@ subjects_keyboard = {
                     "label": "География"
                 },
                 "color": "primary"
+        }],
+        [{
+                "action": {
+                    "type": "text",
+                    "payload": "{\"button\": \"2\"}",
+                    "label": "Назад"
+                },
+                "color": "negative"
         }]
     ]
 }
@@ -142,7 +150,7 @@ while True:
     for event in longpoll.listen():
         if event.type == VkEventType.MESSAGE_NEW:
             if event.to_me:
-                if event.text.lower() == 'начать':
+                if event.text.lower() == 'начать' or event.text.lower() == 'назад':
                     send_message(event.user_id, 'Выбирай', default_keyboard)
                 elif event.text.lower() == 'учитель':
                     check = teachers_database.check_teacher(event.user_id)
