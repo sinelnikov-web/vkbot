@@ -6,9 +6,11 @@ from threading import Thread
 from datetime import datetime
 import sqlite3
 import asyncio
+import json
+from my_token import token, teacher_token
 
-token = os.environ.get('BOT_TOKEN')
-teacher_token = os.environ.get('TEACHER_TOKEN')
+
+
 class TeachersDB:
 
     def __init__(self):
@@ -37,13 +39,13 @@ class TeachersDB:
                             if event.user_id == teacher_id:
                                 if event.text == teacher_token:
                                     self.add_teacher(teacher_id)
-                                    send_message(teacher_id, 'Вы успешно авторизовались \n Что бы вы хотели сделать?')
+                                    send_message(teacher_id, 'Вы успешно авторизовались \n Выбирайте ваш предмет', keyboard=subjects_keyboard)
                                     return True
                                 else:
                                     send_message(teacher_id, 'Неверный ключ')
                                     return False
         else:
-            send_message(teacher_id, 'Вы успешно авторизовались')
+            send_message(teacher_id, 'Вы успешно авторизовались \n Выбирайте ваш предмет.', keyboard=subjects_keyboard)
             return True
 
     def delete_teacher(self, teacher_id):
@@ -51,27 +53,105 @@ class TeachersDB:
         self.db.commit()
 
 teachers_database = TeachersDB()
-loop = asyncio.get_event_loop()
 vk_session = vk_api.VkApi(token=token)
 session_api = vk_session.get_api()
 longpoll = VkLongPoll(vk_session)
 
-def send_message(user_id, text):
+default_keyboard = {
+    "one_time": None,
+    "buttons": [
+        [{
+                "action": {
+                    "type": "text",
+                    "payload": "{\"button\": \"2\"}",
+                    "label": "Учитель"
+                },
+                "color": "positive"
+        }],
+        [{
+                "action": {
+                    "type": "text",
+                    "payload": "{\"button\": \"2\"}",
+                    "label": "Ученик"
+                },
+                "color": "primary"
+        }]
+    ]
+}
+
+subjects_keyboard = {
+    "one_time": None,
+    "buttons": [
+        [{
+                "action": {
+                    "type": "text",
+                    "payload": "{\"button\": \"2\"}",
+                    "label": "Математика"
+                },
+                "color": "positive"
+        },
+        {
+                "action": {
+                    "type": "text",
+                    "payload": "{\"button\": \"2\"}",
+                    "label": "Русский язык"
+                },
+                "color": "primary"
+        }],
+        [{
+                "action": {
+                    "type": "text",
+                    "payload": "{\"button\": \"2\"}",
+                    "label": "Английский язык"
+                },
+                "color": "positive"
+        },
+        {
+                "action": {
+                    "type": "text",
+                    "payload": "{\"button\": \"2\"}",
+                    "label": "Казахский язык"
+                },
+                "color": "primary"
+        }],
+        [{
+                "action": {
+                    "type": "text",
+                    "payload": "{\"button\": \"2\"}",
+                    "label": "Физика"
+                },
+                "color": "positive"
+        },
+        {
+                "action": {
+                    "type": "text",
+                    "payload": "{\"button\": \"2\"}",
+                    "label": "География"
+                },
+                "color": "primary"
+        }]
+    ]
+}
+
+
+def send_message(user_id, text, keyboard = None):
     vk_session.method('messages.send',
                       {'user_id': user_id,
                        'message': text,
+                       'keyboard': None if keyboard == None else json.dumps(keyboard, ensure_ascii=False),
                        'random_id': 0})
 
 while True:
     for event in longpoll.listen():
         if event.type == VkEventType.MESSAGE_NEW:
             if event.to_me:
-                if event.text == 'учитель':
-                    check = loop.run_until_complete(teachers_database.check_teacher(event.user_id))
-                elif event.text == 'ученик':
-                    send_message(event.user_id, 'выбирай предмет')
-
-                elif event.text == 'удалить':
+                if event.text.lower() == 'начать':
+                    send_message(event.user_id, 'Выбирай', default_keyboard)
+                elif event.text.lower() == 'учитель':
+                    check = teachers_database.check_teacher(event.user_id)
+                elif event.text.lower() == 'ученик':
+                    send_message(event.user_id, 'выбирай предмет', subjects_keyboard)
+                elif event.text.lower() == 'удалить':
                     teachers_database.delete_teacher(event.user_id)
                     send_message(event.user_id, 'Вы удалены')
                 else:
