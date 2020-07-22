@@ -25,7 +25,7 @@ class TeachersDB:
             for value in self.cursor.execute('SELECT id FROM teachers_id'):
                 print(value)
 
-    async def check_teacher(self, teacher_id):
+    def check_teacher(self, teacher_id):
         self.cursor.execute(f'SELECT id FROM teachers_id WHERE id = {teacher_id}')
         if self.cursor.fetchone() is None:
             send_message(teacher_id, 'Введите уникальный ключ учителя')
@@ -60,15 +60,12 @@ def send_message(user_id, text):
                        'message': text,
                        'random_id': 0})
 
-async def check_user(user_id):
-    return await teachers_database.check_teacher(user_id)
-
 while True:
     for event in longpoll.listen():
         if event.type == VkEventType.MESSAGE_NEW:
             if event.to_me:
                 if event.text == 'учитель':
-                    check = check_user(event.user_id)
+                    check = teachers_database.check_teacher(event.user_id)
                     if check:
                         send_message(event.user_id, 'Что бы вы хотели сделать?')
 
