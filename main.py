@@ -48,6 +48,7 @@ class TeachersDB:
 
     def delete_teacher(self, teacher_id):
         self.cursor.execute(f"DELETE FROM teachers_id WHERE id = {teacher_id}")
+        self.db.commit()
 
 teachers_database = TeachersDB()
 loop = asyncio.get_event_loop()
