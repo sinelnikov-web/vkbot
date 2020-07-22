@@ -5,6 +5,7 @@ import os
 from threading import Thread
 from datetime import datetime
 import sqlite3
+import asyncio
 
 token = os.environ.get('BOT_TOKEN')
 teacher_token = os.environ.get('TEACHER_TOKEN')
@@ -36,7 +37,7 @@ class TeachersDB:
                             if event.user_id == teacher_id:
                                 if event.text == teacher_token:
                                     self.add_teacher(teacher_id)
-                                    send_message(teacher_id, 'Вы успешно авторизовались')
+                                    send_message(teacher_id, 'Вы успешно авторизовались \n Что бы вы хотели сделать?')
                                     return True
                                 else:
                                     send_message(teacher_id, 'Неверный ключ')
@@ -47,11 +48,9 @@ class TeachersDB:
 
     def delete_teacher(self, teacher_id):
         self.cursor.execute(f"DELETE FROM teachers_id WHERE id = {teacher_id}")
-        self.db.commit()
-        
 
 teachers_database = TeachersDB()
-
+loop = asyncio.get_event_loop()
 vk_session = vk_api.VkApi(token=token)
 session_api = vk_session.get_api()
 longpoll = VkLongPoll(vk_session)
@@ -67,10 +66,7 @@ while True:
         if event.type == VkEventType.MESSAGE_NEW:
             if event.to_me:
                 if event.text == 'учитель':
-                    check = teachers_database.check_teacher(event.user_id)
-                    if check:
-                        send_message(event.user_id, 'Что бы вы хотели сделать?')
-
+                    check = loop.run_until_complete(teachers_database.check_teacher(event.user_id))
                 elif event.text == 'ученик':
                     send_message(event.user_id, 'выбирай предмет')
 
