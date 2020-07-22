@@ -1,7 +1,6 @@
 requests
 vk_api
 datetime
-sqlite3
 aiohttp
 websockets
 chardet
