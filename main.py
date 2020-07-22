@@ -2,14 +2,11 @@ import requests
 import vk_api
 from vk_api.longpoll import VkLongPoll, VkEventType
 import os
-from threading import Thread
-from datetime import datetime
 import sqlite3
-import asyncio
 import json
-from my_token import token, teacher_token
 
-
+token = os.environ.get('BOT_TOKEN')
+teacher_token = os.environ.get('TEACHER_TOKEN')
 
 class TeachersDB:
 
