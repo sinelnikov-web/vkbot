@@ -1,6 +1,5 @@
 requests
 vk_api
-Thread
 datetime
 sqlite3
 aiohttp
