@@ -1,0 +1,9 @@
+requests
+vk_api
+os
+Thread
+datetime
+sqlite3
+aiohttp
+websockets
+chardet
